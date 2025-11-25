@@ -1,0 +1,900 @@
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>三江学院新闻学 - 新闻小记者养成记</title>
+<style>
+* {
+margin: 0;
+padding: 0;
+box-sizing: border-box;
+}
+
+body {
+font-family: 'Microsoft YaHei', sans-serif;
+background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+min-height: 100vh;
+display: flex;
+justify-content: center;
+align-items: center;
+overflow-x: hidden;
+}
+
+.game-container {
+background: white;
+border-radius: 20px;
+box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+width: 90%;
+max-width: 1200px;
+min-height: 80vh;
+position: relative;
+overflow: hidden;
+}
+
+.game-header {
+background: linear-gradient(45deg, #f093fb 0%, #f5576c 100%);
+color: white;
+padding: 30px;
+text-align: center;
+position: relative;
+}
+
+.game-title {
+font-size: 2.5em;
+margin-bottom: 10px;
+text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.game-subtitle {
+font-size: 1.2em;
+opacity: 0.9;
+}
+
+.player-stats {
+position: absolute;
+top: 20px;
+right: 20px;
+background: rgba(255, 255, 255, 0.2);
+padding: 15px 25px;
+border-radius: 10px;
+backdrop-filter: blur(10px);
+}
+
+.stat-item {
+display: flex;
+align-items: center;
+margin: 5px 0;
+font-size: 1.1em;
+}
+
+.stat-icon {
+margin-right: 10px;
+font-size: 1.3em;
+}
+
+.game-area {
+padding: 40px;
+min-height: 500px;
+}
+
+.level-container {
+display: none;
+animation: fadeIn 0.5s ease;
+}
+
+.level-container.active {
+display: block;
+}
+
+@keyframes fadeIn {
+from { opacity: 0; transform: translateY(20px); }
+to { opacity: 1; transform: translateY(0); }
+}
+
+.mission-card {
+background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+color: white;
+padding: 30px;
+border-radius: 15px;
+margin-bottom: 30px;
+box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.mission-title {
+font-size: 1.8em;
+margin-bottom: 15px;
+display: flex;
+align-items: center;
+}
+
+.mission-icon {
+font-size: 2em;
+margin-right: 15px;
+}
+
+.mission-description {
+font-size: 1.1em;
+line-height: 1.6;
+margin-bottom: 20px;
+}
+
+.task-area {
+background: #f8f9fa;
+padding: 30px;
+border-radius: 15px;
+margin-bottom: 20px;
+}
+
+.drag-container {
+min-height: 200px;
+border: 3px dashed #ddd;
+border-radius: 10px;
+padding: 20px;
+margin: 20px 0;
+display: flex;
+flex-wrap: wrap;
+gap: 10px;
+align-items: flex-start;
+transition: all 0.3s ease;
+}
+
+.drag-container.drag-over {
+border-color: #667eea;
+background: rgba(102, 126, 234, 0.1);
+}
+
+.draggable-item {
+background: white;
+padding: 15px 25px;
+border-radius: 10px;
+cursor: move;
+box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+transition: all 0.3s ease;
+user-select: none;
+}
+
+.draggable-item:hover {
+transform: translateY(-3px);
+box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.draggable-item.dragging {
+opacity: 0.5;
+}
+
+.question-box {
+background: white;
+padding: 30px;
+border-radius: 15px;
+box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+}
+
+.question {
+font-size: 1.3em;
+margin-bottom: 25px;
+color: #333;
+}
+
+.option {
+background: #f8f9fa;
+padding: 15px 25px;
+margin: 10px 0;
+border-radius: 10px;
+cursor: pointer;
+transition: all 0.3s ease;
+border: 2px solid transparent;
+}
+
+.option:hover {
+background: #667eea;
+color: white;
+transform: translateX(10px);
+}
+
+.option.selected {
+border-color: #667eea;
+background: rgba(102, 126, 234, 0.1);
+}
+
+.option.correct {
+background: #4caf50;
+color: white;
+}
+
+.option.incorrect {
+background: #f44336;
+color: white;
+}
+
+.action-button {
+background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);
+color: white;
+border: none;
+padding: 15px 40px;
+font-size: 1.1em;
+border-radius: 30px;
+cursor: pointer;
+transition: all 0.3s ease;
+box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+margin: 10px;
+}
+
+.action-button:hover {
+transform: translateY(-3px);
+box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+}
+
+.action-button:disabled {
+opacity: 0.6;
+cursor: not-allowed;
+}
+
+.completion-message {
+background: linear-gradient(45deg, #4caf50 0%, #45a049 100%);
+color: white;
+padding: 20px;
+border-radius: 10px;
+text-align: center;
+margin: 20px 0;
+animation: slideIn 0.5s ease;
+}
+
+@keyframes slideIn {
+from { transform: translateX(-100%); }
+to { transform: translateX(0); }
+}
+
+.progress-bar {
+background: #e0e0e0;
+height: 10px;
+border-radius: 5px;
+overflow: hidden;
+margin: 20px 0;
+}
+
+.progress-fill {
+background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);
+height: 100%;
+width: 0%;
+transition: width 0.5s ease;
+}
+
+.intro-screen {
+text-align: center;
+padding: 50px;
+}
+
+.intro-title {
+font-size: 3em;
+color: #333;
+margin-bottom: 20px;
+}
+
+.intro-text {
+font-size: 1.3em;
+color: #666;
+margin-bottom: 30px;
+line-height: 1.8;
+}
+
+.character-avatar {
+width: 150px;
+height: 150px;
+background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);
+border-radius: 50%;
+margin: 0 auto 30px;
+display: flex;
+align-items: center;
+justify-content: center;
+font-size: 4em;
+animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+0%, 100% { transform: translateY(0); }
+50% { transform: translateY(-20px); }
+}
+
+.news-gallery {
+display: grid;
+grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+gap: 20px;
+margin: 30px 0;
+}
+
+.news-item {
+background: white;
+border-radius: 10px;
+overflow: hidden;
+box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+transition: transform 0.3s ease;
+cursor: pointer;
+}
+
+.news-item:hover {
+transform: translateY(-5px);
+}
+
+.news-image {
+width: 100%;
+height: 150px;
+background: linear-gradient(45deg, #f093fb 0%, #f5576c 100%);
+display: flex;
+align-items: center;
+justify-content: center;
+font-size: 3em;
+color: white;
+}
+
+.news-content {
+padding: 20px;
+}
+
+.news-title {
+font-size: 1.2em;
+margin-bottom: 10px;
+color: #333;
+}
+
+.news-excerpt {
+color: #666;
+font-size: 0.9em;
+line-height: 1.5;
+}
+
+.modal {
+display: none;
+position: fixed;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+background: rgba(0, 0, 0, 0.8);
+z-index: 1000;
+justify-content: center;
+align-items: center;
+}
+
+.modal-content {
+background: white;
+padding: 40px;
+border-radius: 20px;
+max-width: 600px;
+width: 90%;
+text-align: center;
+animation: modalSlideIn 0.3s ease;
+}
+
+@keyframes modalSlideIn {
+from { transform: scale(0.8); opacity: 0; }
+to { transform: scale(1); opacity: 1; }
+}
+
+.modal h2 {
+color: #333;
+margin-bottom: 20px;
+font-size: 2em;
+}
+
+.modal p {
+color: #666;
+line-height: 1.6;
+margin-bottom: 30px;
+}
+
+.close-button {
+background: #666;
+color: white;
+border: none;
+padding: 10px 30px;
+border-radius: 20px;
+cursor: pointer;
+font-size: 1em;
+transition: all 0.3s ease;
+}
+
+.close-button:hover {
+background: #333;
+transform: scale(1.05);
+}
+
+.floating-elements {
+position: absolute;
+width: 100%;
+height: 100%;
+pointer-events: none;
+overflow: hidden;
+}
+
+.floating-element {
+position: absolute;
+opacity: 0.1;
+animation: float 20s infinite linear;
+}
+
+@keyframes float {
+from { transform: translateY(100vh) rotate(0deg); }
+to { transform: translateY(-100px) rotate(360deg); }
+}
+
+.award-badge {
+display: inline-block;
+background: gold;
+color: #333;
+padding: 5px 15px;
+border-radius: 20px;
+margin: 5px;
+font-weight: bold;
+box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+}
+</style>
+</head>
+<body>
+<div class="floating-elements">
+<div class="floating-element" style="left: 10%; font-size: 30px; animation-delay: 0s;">📰</div>
+<div class="floating-element" style="left: 30%; font-size: 40px; animation-delay: 5s;">📷</div>
+<div class="floating-element" style="left: 50%; font-size: 35px; animation-delay: 10s;">🎤</div>
+<div class="floating-element" style="left: 70%; font-size: 45px; animation-delay: 15s;">✍️</div>
+<div class="floating-element" style="left: 90%; font-size: 25px; animation-delay: 3s;">📡</div>
+</div>
+
+<div class="game-container">
+<div class="game-header">
+<h1 class="game-title">新闻小记者养成记</h1>
+<p class="game-subtitle">探索三江学院新闻学的精彩世界</p>
+<div class="player-stats">
+<div class="stat-item">
+<span class="stat-icon">🎯</span>
+<span>任务进度: <span id="progress">0</span>/5</span>
+</div>
+<div class="stat-item">
+<span class="stat-icon">⭐</span>
+<span>获得经验: <span id="experience">0</span></span>
+</div>
+<div class="stat-item">
+<span class="stat-icon">🏆</span>
+<span>成就: <span id="achievements">0</span></span>
+</div>
+</div>
+</div>
+
+<div class="game-area">
+<!-- 欢迎界面 -->
+<div class="level-container active" id="intro">
+<div class="intro-screen">
+<div class="character-avatar">📰</div>
+<h2 class="intro-title">欢迎来到三江学院新闻学</h2>
+<p class="intro-text">
+想成为一名优秀的新闻工作者吗？<br>
+通过完成5个精心设计的任务，<br>
+你将学习到新闻采写、编辑、发布的全过程！<br>
+让我们一起开启这段精彩的新闻之旅吧！
+</p>
+<button class="action-button" onclick="startGame()">开始冒险</button>
+</div>
+</div>
+
+<!-- 任务1：新闻要素识别 -->
+<div class="level-container" id="level1">
+<div class="mission-card">
+<h2 class="mission-title">
+<span class="mission-icon">🔍</span>
+任务一：识别新闻要素
+</h2>
+<p class="mission-description">
+新闻报道必须包含5W1H要素。请将正确的新闻要素拖拽到对应的位置。
+</p>
+</div>
+
+<div class="task-area">
+<h3>请将下列要素拖拽到正确的位置：</h3>
+<div class="drag-container" id="elements-container">
+<div class="draggable-item" draggable="true" data-element="what">What (什么事)</div>
+<div class="draggable-item" draggable="true" data-element="who">Who (谁)</div>
+<div class="draggable-item" draggable="true" data-element="when">When (何时)</div>
+<div class="draggable-item" draggable="true" data-element="where">Where (何地)</div>
+<div class="draggable-item" draggable="true" data-element="why">Why (为何)</div>
+<div class="draggable-item" draggable="true" data-element="how">How (如何)</div>
+</div>
+</div>
+
+<div class="question-box">
+<h3>新闻要素对应关系：</h3>
+<div class="drag-container" id="answers-container">
+<div class="answer-slot" data-answer="what">1. _______：发生了什么事件？</div>
+<div class="answer-slot" data-answer="who">2. _______：谁参与了事件？</div>
+<div class="answer-slot" data-answer="when">3. _______：事件何时发生？</div>
+<div class="answer-slot" data-answer="where">4. _______：事件发生在哪里？</div>
+<div class="answer-slot" data-answer="why">5. _______：事件为何发生？</div>
+<div class="answer-slot" data-answer="how">6. _______：事件如何发生？</div>
+</div>
+</div>
+
+<button class="action-button" onclick="checkLevel1()">检查答案</button>
+<button class="action-button" onclick="showHint()">提示</button>
+</div>
+
+<!-- 任务2：新闻标题创作 -->
+<div class="level-container" id="level2">
+<div class="mission-card">
+<h2 class="mission-title">
+<span class="mission-icon">✍️</span>
+任务二：新闻标题创作
+</h2>
+<p class="mission-description">
+好的新闻标题要简洁明了、吸引眼球。请选择最合适的标题。
+</p>
+</div>
+
+<div class="task-area">
+<div class="question-box">
+<p class="question">三江学院新闻学专业举办"新媒体时代"主题讲座，请选择最合适的新闻标题：</p>
+<div class="option" onclick="selectOption(this, false)">A. 今天有讲座</div>
+<div class="option" onclick="selectOption(this, true)">B. 三江学院新闻学专业举办"新媒体时代"主题讲座</div>
+<div class="option" onclick="selectOption(this, false)">C. 讲座很精彩</div>
+<div class="option" onclick="selectOption(this, false)">D. 新闻学专业</div>
+</div>
+</div>
+
+<button class="action-button" onclick="nextLevel()">继续下一题</button>
+</div>
+
+<!-- 任务3：采访技巧 -->
+<div class="level-container" id="level3">
+<div class="mission-card">
+<h2 class="mission-title">
+<span class="mission-icon">🎤</span>
+任务三：采访技巧问答
+</h2>
+<p class="mission-description">
+作为新闻工作者，掌握正确的采访技巧非常重要。回答下列问题。
+</p>
+</div>
+
+<div class="task-area">
+<div class="question-box">
+<p class="question">进行采访时，最重要的是什么？</p>
+<div class="option" onclick="selectOption(this, false)">A. 准备很多尖锐的问题</div>
+<div class="option" onclick="selectOption(this, true)">B. 做好充分准备，尊重受访者</div>
+<div class="option" onclick="selectOption(this, false)">C. 穿着时尚</div>
+<div class="option" onclick="selectOption(this, false)">D. 随意提问</div>
+</div>
+</div>
+
+<button class="action-button" onclick="nextLevel()">继续下一题</button>
+</div>
+
+<!-- 任务4：新闻编辑室 -->
+<div class="level-container" id="level4">
+<div class="mission-card">
+<h2 class="mission-title">
+<span class="mission-icon">📝</span>
+任务四：探索新闻编辑室
+</h2>
+<p class="mission-description">
+三江学院新闻学专业的编辑室配备了先进的设备，让我们一起看看吧！
+</p>
+</div>
+
+<div class="task-area">
+<div class="news-gallery">
+<div class="news-item" onclick="showNewsDetail(1)">
+<div class="news-image">💻</div>
+<div class="news-content">
+<h3 class="news-title">数字编辑工作站</h3>
+<p class="news-excerpt">配备专业编辑软件，支持视频剪辑、图文排版</p>
+</div>
+</div>
+<div class="news-item" onclick="showNewsDetail(2)">
+<div class="news-image">🎥</div>
+<div class="news-content">
+<h3 class="news-title">演播室</h3>
+<p class="news-excerpt">专业级拍摄设备，模拟真实新闻场景</p>
+</div>
+</div>
+<div class="news-item" onclick="showNewsDetail(3)">
+<div class="news-image">📡</div>
+<div class="news-content">
+<h3 class="news-title">广播台</h3>
+<p class="news-excerpt">校园广播实践基地，培养播音主持人才</p>
+</div>
+</div>
+</div>
+</div>
+
+<button class="action-button" onclick="nextLevel()">完成探索</button>
+</div>
+
+<!-- 任务5：新闻发布 -->
+<div class="level-container" id="level5">
+<div class="mission-card">
+<h2 class="mission-title">
+<span class="mission-icon">🚀</span>
+任务五：新闻发布实践
+</h2>
+<p class="mission-description">
+恭喜你完成了所有学习任务！现在发布你的第一篇新闻作品吧！
+</p>
+</div>
+
+<div class="task-area">
+<div class="question-box">
+<h3>请为你的新闻作品选择一个发布平台：</h3>
+<div class="option" onclick="selectOption(this, false)">A. 仅在班级内部分享</div>
+<div class="option" onclick="selectOption(this, true)">B. 校园媒体平台 + 社交媒体</div>
+<div class="option" onclick="selectOption(this, false)">C. 只发朋友圈</div>
+<div class="option" onclick="selectOption(this, false)">D. 不发布</div>
+</div>
+</div>
+
+<button class="action-button" onclick="completeGame()">完成所有任务</button>
+</div>
+
+<!-- 完成界面 -->
+<div class="level-container" id="complete">
+<div class="intro-screen">
+<div class="character-avatar" style="font-size: 5em;">🎉</div>
+<h2 class="intro-title">恭喜你成为新闻小记者！</h2>
+<p class="intro-text">
+你已经成功完成了所有5个任务，<br>
+了解了新闻学的基本知识和技能。<br>
+三江学院新闻学专业期待你的加入！
+</p>
+<div id="earned-badges"></div>
+<button class="action-button" onclick="restartGame()">再玩一次</button>
+<button class="action-button" onclick="showCollegeInfo()">了解更多</button>
+</div>
+</div>
+
+<div class="progress-bar">
+<div class="progress-fill" id="progressBar"></div>
+</div>
+</div>
+</div>
+
+<!-- 模态框 -->
+<div class="modal" id="modal">
+<div class="modal-content">
+<h2 id="modalTitle">标题</h2>
+<p id="modalText">内容</p>
+<button class="close-button" onclick="closeModal()">关闭</button>
+</div>
+</div>
+
+<script>
+let currentLevel = 0;
+let experience = 0;
+let achievements = 0;
+let draggedElement = null;
+
+const levels = ['intro', 'level1', 'level2', 'level3', 'level4', 'level5', 'complete'];
+const progressText = ['欢迎', '新闻要素', '标题创作', '采访技巧', '编辑室', '新闻发布', '完成'];
+
+function startGame() {
+currentLevel = 1;
+showLevel(currentLevel);
+updateProgress();
+}
+
+function showLevel(level) {
+document.querySelectorAll('.level-container').forEach(container => {
+container.classList.remove('active');
+});
+document.getElementById(levels[level]).classList.add('active');
+
+// 更新进度条
+const progress = (level / (levels.length - 1)) * 100;
+document.getElementById('progressBar').style.width = progress + '%';
+}
+
+function nextLevel() {
+if (currentLevel < levels.length - 1) {
+currentLevel++;
+showLevel(currentLevel);
+updateProgress();
+experience += 20;
+updateStats();
+}
+}
+
+function updateProgress() {
+document.getElementById('progress').textContent = currentLevel;
+}
+
+function updateStats() {
+document.getElementById('experience').textContent = experience;
+document.getElementById('achievements').textContent = achievements;
+}
+
+// 拖拽功能
+document.addEventListener('DOMContentLoaded', function() {
+const draggables = document.querySelectorAll('.draggable-item');
+const containers = document.querySelectorAll('.drag-container, .answer-slot');
+
+draggables.forEach(draggable => {
+draggable.addEventListener('dragstart', function(e) {
+draggedElement = this;
+this.classList.add('dragging');
+e.dataTransfer.effectAllowed = 'move';
+e.dataTransfer.setData('text/html', this.innerHTML);
+});
+
+draggable.addEventListener('dragend', function(e) {
+this.classList.remove('dragging');
+});
+});
+
+containers.forEach(container => {
+container.addEventListener('dragover', function(e) {
+e.preventDefault();
+this.classList.add('drag-over');
+});
+
+container.addEventListener('dragleave', function(e) {
+this.classList.remove('drag-over');
+});
+
+container.addEventListener('drop', function(e) {
+e.preventDefault();
+this.classList.remove('drag-over');
+
+if (draggedElement) {
+// 如果是答案槽，替换内容
+if (this.classList.contains('answer-slot')) {
+this.textContent = '';
+this.appendChild(draggedElement.cloneNode(true));
+} else {
+this.appendChild(draggedElement.cloneNode(true));
+}
+}
+});
+});
+});
+
+function checkLevel1() {
+const slots = document.querySelectorAll('.answer-slot');
+let correct = 0;
+
+slots.forEach(slot => {
+const slotAnswer = slot.dataset.answer;
+const draggedItem = slot.querySelector('.draggable-item');
+if (draggedItem && draggedItem.dataset.element === slotAnswer) {
+correct++;
+draggedItem.style.background = '#4caf50';
+draggedItem.style.color = 'white';
+} else if (draggedItem) {
+draggedItem.style.background = '#f44336';
+draggedItem.style.color = 'white';
+}
+});
+
+if (correct === 6) {
+experience += 30;
+achievements++;
+updateStats();
+showModal('任务完成！', '恭喜你！你正确识别了所有的新闻要素！获得30经验值！');
+setTimeout(() => nextLevel(), 2000);
+} else {
+showModal('继续努力', `你答对了 ${correct} 个，还有 ${6 - correct} 个需要改进。再试一次吧！`);
+}
+}
+
+function selectOption(element, isCorrect) {
+const options = element.parentElement.querySelectorAll('.option');
+options.forEach(opt => {
+opt.classList.remove('selected', 'correct', 'incorrect');
+opt.onclick = null;
+});
+
+if (isCorrect) {
+element.classList.add('correct');
+experience += 20;
+achievements++;
+updateStats();
+} else {
+element.classList.add('incorrect');
+// 显示正确答案
+options.forEach(opt => {
+if (opt.onclick && opt !== element) {
+opt.onclick = null;
+opt.style.opacity = '0.5';
+}
+});
+}
+}
+
+function showHint() {
+showModal('提示', '新闻要素5W1H分别是：What（什么事）、Who（谁）、When（何时）、Where（何地）、Why（为何）、How（如何）。');
+}
+
+function showNewsDetail(id) {
+const details = {
+1: '三江学院新闻学专业拥有先进的数字编辑工作站，配备Adobe Creative Cloud全套软件，包括Photoshop、Premiere Pro、After Effects等专业工具，帮助学生掌握现代媒体制作技能。',
+2: '专业演播室配备4K摄像机、专业灯光系统、绿幕等设备，模拟真实新闻演播环境，为学生提供实践机会。',
+3: '校园广播台是学生实践的重要平台，每天播报校园新闻、播放音乐，培养播音主持人才。'
+};
+
+showModal('设施详情', details[id]);
+}
+
+function completeGame() {
+currentLevel = levels.length - 1;
+showLevel(currentLevel);
+updateProgress();
+
+// 显示获得的徽章
+const badges = ['新闻要素大师', '标题创作达人', '采访专家', '编辑室探索者', '新闻发布先锋'];
+const badgesHtml = badges.map(badge => `<span class="award-badge">${badge}</span>`).join('');
+document.getElementById('earned-badges').innerHTML = `<h3>获得的成就：</h3>${badgesHtml}`;
+
+experience += 50;
+achievements += 5;
+updateStats();
+}
+
+function restartGame() {
+currentLevel = 0;
+experience = 0;
+achievements = 0;
+updateStats();
+showLevel(0);
+
+// 重置所有状态
+document.querySelectorAll('.option').forEach(opt => {
+opt.classList.remove('selected', 'correct', 'incorrect');
+opt.onclick = null;
+opt.style.opacity = '1';
+});
+
+// 重置拖拽区域
+document.getElementById('elements-container').innerHTML = `
+<div class="draggable-item" draggable="true" data-element="what">What (什么事)</div>
+<div class="draggable-item" draggable="true" data-element="who">Who (谁)</div>
+<div class="draggable-item" draggable="true" data-element="when">When (何时)</div>
+<div class="draggable-item" draggable="true" data-element="where">Where (何地)</div>
+<div class="draggable-item" draggable="true" data-element="why">Why (为何)</div>
+<div class="draggable-item" draggable="true" data-element="how">How (如何)</div>
+`;
+
+document.querySelectorAll('.answer-slot').forEach(slot => {
+slot.innerHTML = slot.dataset.answer === 'what' ? '1. _______：发生了什么事件？' :
+slot.dataset.answer === 'who' ? '2. _______：谁参与了事件？' :
+slot.dataset.answer === 'when' ? '3. _______：事件何时发生？' :
+slot.dataset.answer === 'where' ? '4. _______：事件发生在哪里？' :
+slot.dataset.answer === 'why' ? '5. _______：事件为何发生？' :
+'6. _______：事件如何发生？';
+});
+}
+
+function showCollegeInfo() {
+showModal('三江学院新闻学专业',
+'三江学院新闻学专业是学校的特色专业之一，拥有优秀的师资队伍和先进的教学设施。\n\n' +
+'专业特色：\n' +
+'• 注重实践教学，强调学以致用\n' +
+'• 与媒体行业紧密合作，提供实习机会\n' +
+'• 培养全媒体新闻人才，适应媒体融合发展趋势\n' +
+'• 优秀的就业率和升学率\n\n' +
+'欢迎报考三江学院新闻学专业！');
+}
+
+function showModal(title, text) {
+document.getElementById('modalTitle').textContent = title;
+document.getElementById('modalText').textContent = text;
+document.getElementById('modal').style.display = 'flex';
+}
+
+function closeModal() {
+document.getElementById('modal').style.display = 'none';
+}
+
+// 点击模态框外部关闭
+document.getElementById('modal').addEventListener('click', function(e) {
+if (e.target === this) {
+closeModal();
+}
+});
+</script>
+</body>
+</html>
